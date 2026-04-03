@@ -441,7 +441,9 @@ export interface ApiTodoTreeTodoTree extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    content: Schema.Attribute.JSON;
+    content: Schema.Attribute.JSON &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<{}>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -458,7 +460,9 @@ export interface ApiTodoTreeTodoTree extends Struct.CollectionTypeSchema {
     users_permissions_user: Schema.Attribute.Relation<
       'oneToOne',
       'plugin::users-permissions.user'
-    >;
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.Private;
   };
 }
 
@@ -952,7 +956,8 @@ export interface PluginUsersPermissionsUser
     todo_tree: Schema.Attribute.Relation<
       'oneToOne',
       'api::todo-tree.todo-tree'
-    >;
+    > &
+      Schema.Attribute.Private;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -12,13 +12,17 @@
   "pluginOptions": {},
   "attributes": {
     "content": {
-      "type": "json"
+      "type": "json",
+      "required": true,
+      "default": {}
     },
     "users_permissions_user": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "todo_tree"
+      "inversedBy": "todo_tree",
+      "required": true,
+      "private": true
     }
   }
 }
