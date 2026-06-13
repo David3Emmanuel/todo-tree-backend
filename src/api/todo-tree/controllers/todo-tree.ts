@@ -29,15 +29,33 @@ export default factories.createCoreController(TODO_TREE_UID, ({ strapi }) => ({
 			return ctx.unauthorized('Authentication required');
 		}
 
-		const content = ctx.request.body?.data?.content ?? ctx.request.body?.content;
+		const data = ctx.request.body?.data ?? ctx.request.body;
+		const content = data?.content;
+		const lastSyncedUpdatedAtMs = Number(data?.lastSyncedUpdatedAtMs);
 
 		if (typeof content === 'undefined') {
 			return ctx.badRequest('Request body must include content');
 		}
 
-		const entity = await strapi
-			.service(TODO_TREE_UID)
-			.upsertByUserId(userId, content);
+		const service = strapi.service(TODO_TREE_UID);
+		const existing = await service.findByUserId(userId);
+
+		if (existing && !Number.isNaN(lastSyncedUpdatedAtMs) && lastSyncedUpdatedAtMs > 0) {
+			const dbUpdatedAtMs = new Date(existing.updatedAt).getTime();
+			if (dbUpdatedAtMs > lastSyncedUpdatedAtMs) {
+				ctx.status = 409;
+				ctx.body = {
+					error: {
+						status: 409,
+						name: 'ConflictError',
+						message: 'Conflict: Server state is newer than the last synced state.',
+					}
+				};
+				return;
+			}
+		}
+
+		const entity = await service.upsertByUserId(userId, content);
 
 		const sanitized = await this.sanitizeOutput(entity, ctx);
 		return this.transformResponse(sanitized);
